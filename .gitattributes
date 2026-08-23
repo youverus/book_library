@@ -1,0 +1,19 @@
+# 自动识别文本文件，统一 LF 行尾
+* text=auto eol=lf
+
+# 明确文本文件
+*.ts text
+*.tsx text
+*.json text
+*.md text
+*.yml text
+*.yaml text
+*.sh text eol=lf
+*.conf text
+
+# 二进制
+*.sqlite binary
+*.db binary
+*.gz binary
+*.png binary
+*.jpg binary

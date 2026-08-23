@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+*/node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+*/.next/
+*/dist/
+
+# Environment
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+backend/data/
+backend/*.sqlite*
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+pnpm-debug.log*
+
+# Testing
+coverage/
+.coverage/
+
+# Docker volumes
+data/
+postgres_data/
+
+# Misc
+.cache/
+.turbo/
+tmp/
+temp/
+.pnpm-store/
