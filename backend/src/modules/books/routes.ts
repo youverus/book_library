@@ -13,6 +13,9 @@ const createSchema = z.object({
   category: z.string().optional(),
   totalChapters: z.number().int().optional(),
   totalPages: z.number().int().optional(),
+  filePath: z.string().optional(),
+  fileType: z.enum(['txt', 'epub', 'pdf']).optional(),
+  fileSize: z.number().int().optional(),
 });
 
 const listQuerySchema = z.object({

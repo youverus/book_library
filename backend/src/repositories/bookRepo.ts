@@ -10,6 +10,9 @@ export interface CreateBookInput {
   category?: string;
   totalChapters?: number;
   totalPages?: number;
+  filePath?: string;
+  fileType?: 'txt' | 'epub' | 'pdf';
+  fileSize?: number;
 }
 
 export interface UpdateBookInput extends Partial<CreateBookInput> {}
@@ -36,6 +39,9 @@ export const bookRepo = {
       category: input.category || '其他',
       totalChapters: input.totalChapters || 0,
       totalPages: input.totalPages || 0,
+      filePath: input.filePath || '',
+      fileType: input.fileType || 'txt',
+      fileSize: input.fileSize || 0,
     });
     return this.findById(id);
   },

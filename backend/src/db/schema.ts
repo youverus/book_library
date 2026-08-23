@@ -22,6 +22,9 @@ export const books = sqliteTable('books', {
   category: text('category').notNull().default('其他'),
   totalChapters: integer('total_chapters').notNull().default(0),
   totalPages: integer('total_pages').notNull().default(0),
+  filePath: text('file_path').notNull().default(''),
+  fileType: text('file_type', { enum: ['txt', 'epub', 'pdf'] }).notNull().default('txt'),
+  fileSize: integer('file_size').notNull().default(0),
   createdAt: text('created_at').notNull().default(sql`(datetime('now'))`),
   updatedAt: text('updated_at').notNull().default(sql`(datetime('now'))`),
 }, (t) => ({
@@ -88,3 +91,19 @@ export type Bookshelf = typeof bookshelves.$inferSelect;
 export type BookshelfItem = typeof bookshelfItems.$inferSelect;
 export type ReadingProgress = typeof readingProgress.$inferSelect;
 export type Note = typeof notes.$inferSelect;
+
+// ─── 邀请码 ───
+export const inviteCodes = sqliteTable('invite_codes', {
+  id: text('id').primaryKey(),
+  code: text('code').notNull().unique(),
+  createdBy: text('created_by').notNull().references(() => users.id),
+  usedBy: text('used_by').references(() => users.id),
+  status: text('status', { enum: ['unused', 'used', 'revoked'] }).notNull().default('unused'),
+  createdAt: text('created_at').notNull().default(sql`(datetime('now'))`),
+  usedAt: text('used_at'),
+}, (t) => ({
+  codeIdx: uniqueIndex('invite_codes_code_idx').on(t.code),
+  statusIdx: index('invite_codes_status_idx').on(t.status),
+}));
+
+export type InviteCode = typeof inviteCodes.$inferSelect;

@@ -50,6 +50,12 @@ export default function MePage() {
           <p className="text-2xl">📚</p>
           <p className="mt-1 font-medium">我的书架</p>
         </Link>
+        {display?.role === 'admin' && (
+          <Link href="/admin/upload" className="p-4 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow transition">
+            <p className="text-2xl">📤</p>
+            <p className="mt-1 font-medium">上传书籍</p>
+          </Link>
+        )}
         <button onClick={() => { logout(); router.push('/'); }}
           className="p-4 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow transition text-left">
           <p className="text-2xl">🚪</p>

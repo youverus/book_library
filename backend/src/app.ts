@@ -10,6 +10,8 @@ import { progressRoutes } from './modules/progress/routes.js';
 import { noteRoutes } from './modules/notes/routes.js';
 import { searchRoutes } from './modules/search/routes.js';
 import { syncRoutes } from './modules/sync/routes.js';
+import { fileRoutes } from './modules/files/routes.js';
+import { inviteCodeRoutes } from './modules/invite-codes/routes.js';
 import { ok } from './utils/response.js';
 import type { AuthState } from './middleware/auth.js';
 
@@ -48,6 +50,8 @@ export function createApp() {
   app.route('/api/notes', noteRoutes);
   app.route('/api/search', searchRoutes);
   app.route('/api/sync', syncRoutes);
+  app.route('/api/files', fileRoutes);
+  app.route('/api/invite-codes', inviteCodeRoutes);
 
   // 404
   app.notFound(c => c.json({ code: 404, data: null, message: '接口不存在' }, 404));

@@ -24,6 +24,7 @@ frontend/.env
 *.db
 backend/data/
 backend/*.sqlite*
+backend/storage/
 
 # IDE / OS
 .idea/
@@ -51,3 +52,4 @@ postgres_data/
 tmp/
 temp/
 .pnpm-store/
+frontend/tsconfig.tsbuildinfo

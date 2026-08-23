@@ -48,6 +48,9 @@ export interface Book {
   category: string;
   totalChapters: number;
   totalPages: number;
+  filePath: string;
+  fileType: 'txt' | 'epub' | 'pdf';
+  fileSize: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -88,4 +91,23 @@ export interface Paginated<T> {
 export interface AuthResponse {
   user: User;
   token: string;
+}
+
+export interface ChapterItem {
+  index: number;
+  title: string;
+  preview?: string;
+}
+
+export interface ChapterContent {
+  bookId: string;
+  bookTitle: string;
+  fileType: string;
+  chapter: {
+    index: number;
+    title: string;
+    content: string;
+  };
+  totalChapters: number;
+  chapters?: ChapterItem[];
 }

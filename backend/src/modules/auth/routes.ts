@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { userRepo } from '../../repositories/userRepo.js';
+import { inviteCodeRepo } from '../../repositories/inviteCodeRepo.js';
 import { hashPassword, verifyPassword } from '../../utils/password.js';
 import { signToken } from '../../utils/jwt.js';
 import { ok, fail, httpError } from '../../utils/response.js';
@@ -11,6 +12,7 @@ const registerSchema = z.object({
   username: z.string().min(3).max(30),
   email: z.string().email(),
   password: z.string().min(6).max(64),
+  inviteCode: z.string().min(1, '邀请码不能为空'),
 });
 
 const loginSchema = z.object({
@@ -30,8 +32,16 @@ authRoutes.post('/register', async c => {
   if (conflict === 'username') throw new AppError(409, '用户名已存在');
   if (conflict === 'email') throw new AppError(409, '邮箱已被注册');
 
+  // 验证邀请码有效性
+  const isValid = await inviteCodeRepo.isValid(inviteCode);
+  if (!isValid) throw new AppError(400, '邀请码无效或已被使用');
+
   const passwordHash = await hashPassword(password);
   const user = await userRepo.create({ username, email, passwordHash });
+
+  // 将邀请码标记为已使用，关联到新用户
+  await inviteCodeRepo.markAsUsed(inviteCode, user!.id);
+
   const token = await signToken({ sub: user!.id, username: user!.username, role: user!.role });
   return ok(c, { user: { id: user!.id, username: user!.username, email: user!.email, role: user!.role }, token });
 });

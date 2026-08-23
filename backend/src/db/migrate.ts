@@ -38,6 +38,9 @@ export async function migrate() {
       category TEXT NOT NULL DEFAULT '其他',
       total_chapters INTEGER NOT NULL DEFAULT 0,
       total_pages INTEGER NOT NULL DEFAULT 0,
+      file_path TEXT NOT NULL DEFAULT '',
+      file_type TEXT NOT NULL DEFAULT 'txt',
+      file_size INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
@@ -88,6 +91,20 @@ export async function migrate() {
     );
     CREATE INDEX IF NOT EXISTS notes_user_idx ON notes(user_id);
     CREATE INDEX IF NOT EXISTS notes_book_idx ON notes(book_id);
+  `);
+
+  raw.exec(`
+    CREATE TABLE IF NOT EXISTS invite_codes (
+      id TEXT PRIMARY KEY,
+      code TEXT NOT NULL UNIQUE,
+      created_by TEXT NOT NULL REFERENCES users(id),
+      used_by TEXT REFERENCES users(id),
+      status TEXT NOT NULL DEFAULT 'unused',
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      used_at TEXT
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS invite_codes_code_idx ON invite_codes(code);
+    CREATE INDEX IF NOT EXISTS invite_codes_status_idx ON invite_codes(status);
   `);
 
   raw.close();

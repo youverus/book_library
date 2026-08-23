@@ -11,6 +11,7 @@ export default function RegisterPage() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -19,7 +20,7 @@ export default function RegisterPage() {
     setErr('');
     setLoading(true);
     try {
-      const res = await api.post<AuthResponse>('/auth/register', { username, email, password });
+      const res = await api.post<AuthResponse>('/auth/register', { username, email, password, inviteCode });
       setAuth(res.token, res.user);
       router.push('/');
     } catch (error: any) {
@@ -50,6 +51,12 @@ export default function RegisterPage() {
           <input type="password" value={password} onChange={e => setPassword(e.target.value)}
             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-500 transition"
             placeholder="至少 6 个字符" minLength={6} required />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">邀请码</label>
+          <input value={inviteCode} onChange={e => setInviteCode(e.target.value.toUpperCase())}
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-500 transition"
+            placeholder="请输入邀请码" required />
         </div>
         {err && <p className="text-sm text-red-500">{err}</p>}
         <button disabled={loading}

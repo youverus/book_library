@@ -1,5 +1,4 @@
 import { config as loadEnv } from 'node:fs';
-
 // 简易 env 读取（避免引入 dotenv 依赖）
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -35,6 +34,10 @@ export const config = {
     driver: (process.env.DB_DRIVER || 'sqlite') as 'sqlite' | 'postgres',
     sqlitePath: process.env.SQLITE_PATH || resolve(process.cwd(), 'data', 'book_library.db'),
     url: process.env.DATABASE_URL || '',
+  },
+  storage: {
+    basePath: process.env.STORAGE_PATH || resolve(process.cwd(), 'storage', 'books'),
+    maxFileSize: Number(process.env.MAX_FILE_SIZE || 50 * 1024 * 1024),
   },
   isProd: process.env.NODE_ENV === 'production',
 };
