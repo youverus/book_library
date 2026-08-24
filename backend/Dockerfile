@@ -1,5 +1,5 @@
 # ─── 构建阶段 ───
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 COPY package.json ./
 RUN corepack enable && pnpm install --frozen-lockfile
@@ -7,7 +7,7 @@ COPY . .
 RUN pnpm build
 
 # ─── 运行阶段 ───
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 RUN corepack enable

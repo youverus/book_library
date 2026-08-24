@@ -1,6 +1,8 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
+import { resolve } from 'node:path';
 import { bookRepo } from '../../repositories/bookRepo.js';
+import { fileStorage } from '../../services/fileStorage.js';
 import { ok, httpError } from '../../utils/response.js';
 import { AppError } from '../../utils/errors.js';
 import { requireAuth, requireAdmin, optionalAuth, type AuthState } from '../../middleware/auth.js';
@@ -36,12 +38,6 @@ bookRoutes.get('/', async c => {
   return ok(c, result);
 });
 
-// 公开：分类列表
-bookRoutes.get('/categories', async c => {
-  const cats = await bookRepo.listCategories();
-  return ok(c, cats);
-});
-
 // 公开：书籍详情
 bookRoutes.get('/:id', async c => {
   const id = c.req.param('id');
@@ -75,6 +71,19 @@ bookRoutes.delete('/:id', requireAuth, requireAdmin, async c => {
   const id = c.req.param('id');
   const existing = await bookRepo.findById(id);
   if (!existing) return httpError(c, 404, '书籍不存在');
+
+   // 删除关联的源文件
+   if (existing.filePath && existing.filePath.trim()) {
+     try {
+       const fullPath = existing.filePath.startsWith('/')
+         ? existing.filePath
+         : resolve(process.cwd(), 'storage', 'books', existing.filePath);
+       await fileStorage.delete(fullPath);
+     } catch {
+       // 文件删除失败不影响数据库记录删除
+     }
+   }
+
   await bookRepo.remove(id);
   return ok(c, null, '删除成功');
 });

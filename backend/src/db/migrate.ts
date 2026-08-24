@@ -105,6 +105,12 @@ export async function migrate() {
     );
     CREATE UNIQUE INDEX IF NOT EXISTS invite_codes_code_idx ON invite_codes(code);
     CREATE INDEX IF NOT EXISTS invite_codes_status_idx ON invite_codes(status);
+    CREATE TABLE IF NOT EXISTS categories (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL UNIQUE,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
   `);
 
   raw.close();

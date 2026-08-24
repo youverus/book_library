@@ -15,10 +15,8 @@ services:
       - JWT_SECRET=${JWT_SECRET}
     volumes:
       - bl_data:/app/data
-    expose:
-      - "8000"
-    networks:
-      - bl_net
+    ports:
+      - "8000:8000"
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:8000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 30s
@@ -37,47 +35,10 @@ services:
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_BASE=/api
-    expose:
-      - "3000"
-    depends_on:
-      - backend
-    networks:
-      - bl_net
-
-  # ─── Nginx 反向代理 + HTTPS ───
-  nginx:
-    image: nginx:1.27-alpine
-    container_name: bl-nginx
-    restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
-      - certbot_www:/var/www/certbot:ro
-      - certbot_conf:/etc/letsencrypt:ro
+      - "3000:3000"
     depends_on:
-      - frontend
       - backend
-    networks:
-      - bl_net
-
-  # ─── Certbot（Let's Encrypt 自动续期） ───
-  certbot:
-    image: certbot/certbot:latest
-    container_name: bl-certbot
-    volumes:
-      - certbot_www:/var/www/certbot
-      - certbot_conf:/etc/letsencrypt
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-    networks:
-      - bl_net
 
 volumes:
   bl_data:
-  certbot_www:
-  certbot_conf:
-
-networks:
-  bl_net:
-    driver: bridge

@@ -81,6 +81,12 @@ export interface Note {
   updatedAt: string;
 }
 
+export interface Category {
+  id: string;
+  category: string;
+  sortOrder?: number;
+}
+
 export interface Paginated<T> {
   items: T[];
   total: number;

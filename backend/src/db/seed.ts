@@ -47,6 +47,18 @@ async function seed() {
     console.log(`[seed] 书籍已存在（${bookCount.c} 本），跳过`);
   }
 
+  // 同步分类到 categories 表
+  const categories = raw.prepare('SELECT DISTINCT category FROM books').all() as { category: string }[];
+  let catAdded = 0;
+  for (const { category } of categories) {
+    const exists = raw.prepare('SELECT id FROM categories WHERE name = ?').get(category);
+    if (!exists) {
+      raw.prepare('INSERT INTO categories (id, name) VALUES (?, ?)').run(`cat_${category}`, category);
+      catAdded++;
+    }
+  }
+  if (catAdded > 0) console.log(`[seed] 已同步 ${catAdded} 个分类到 categories 表`);
+
   raw.close();
   console.log('[seed] 种子数据完成');
 }

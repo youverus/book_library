@@ -107,3 +107,13 @@ export const inviteCodes = sqliteTable('invite_codes', {
 }));
 
 export type InviteCode = typeof inviteCodes.$inferSelect;
+
+// ─── 分类 ───
+export const categories = sqliteTable('categories', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull().unique(),
+  sortOrder: integer('sort_order').notNull().default(0),
+  createdAt: text('created_at').notNull().default(sql`(datetime('now'))`),
+});
+
+export type Category = typeof categories.$inferSelect;

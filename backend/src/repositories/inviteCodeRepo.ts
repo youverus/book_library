@@ -4,9 +4,9 @@ import { newId } from '../utils/uuid.js';
 import { sql } from 'drizzle-orm';
 
 function generateCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
   let code = '';
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 16; i++) {
     code += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return code;

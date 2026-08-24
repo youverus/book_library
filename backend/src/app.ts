@@ -11,6 +11,8 @@ import { noteRoutes } from './modules/notes/routes.js';
 import { searchRoutes } from './modules/search/routes.js';
 import { syncRoutes } from './modules/sync/routes.js';
 import { fileRoutes } from './modules/files/routes.js';
+import { userRoutes } from './modules/users/routes.js';
+import { categoryRoutes } from './modules/categories/routes.js';
 import { inviteCodeRoutes } from './modules/invite-codes/routes.js';
 import { ok } from './utils/response.js';
 import type { AuthState } from './middleware/auth.js';
@@ -51,6 +53,8 @@ export function createApp() {
   app.route('/api/search', searchRoutes);
   app.route('/api/sync', syncRoutes);
   app.route('/api/files', fileRoutes);
+  app.route('/api/users', userRoutes);
+  app.route('/api/categories', categoryRoutes);
   app.route('/api/invite-codes', inviteCodeRoutes);
 
   // 404

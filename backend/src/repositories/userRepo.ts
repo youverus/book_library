@@ -1,4 +1,5 @@
 import { eq } from 'drizzle-orm';
+import { eq, ne, desc } from 'drizzle-orm';
 import { getDB, schema } from '../db/index.js';
 import { newId } from '../utils/uuid.js';
 
@@ -44,5 +45,15 @@ export const userRepo = {
     const e = await this.findByEmail(email);
     if (e) return 'email';
     return null;
+  },
+
+  async listExcludeAdmin() {
+    return this.db.select({
+      id: schema.users.id,
+      username: schema.users.username,
+      email: schema.users.email,
+      role: schema.users.role,
+      createdAt: schema.users.createdAt,
+    }).from(schema.users).where(ne(schema.users.role, 'admin')).orderBy(desc(schema.users.createdAt));
   },
 };

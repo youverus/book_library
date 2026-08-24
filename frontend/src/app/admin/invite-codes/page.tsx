@@ -27,6 +27,7 @@ export default function AdminInviteCodesPage() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [customCode, setCustomCode] = useState('');
+  const [bulkCount, setBulkCount] = useState(5);
   const [copied, setCopied] = useState<string | null>(null);
 
   const checkAuth = useCallback(() => {
@@ -63,6 +64,18 @@ export default function AdminInviteCodesPage() {
     }
   }
 
+  async function bulkGenerate() {
+    setGenerating(true);
+    try {
+      for (let i = 0; i < bulkCount; i++) {
+        await api.post('/invite-codes', {});
+      }
+      await loadCodes();
+    } finally {
+      setGenerating(false);
+    }
+  }
+
   async function revoke(id: string) {
     await api.del(`/invite-codes/${id}`);
     await loadCodes();
@@ -87,7 +100,7 @@ export default function AdminInviteCodesPage() {
           <input
             value={customCode}
             onChange={e => setCustomCode(e.target.value.toUpperCase())}
-            placeholder="留空则随机生成"
+            placeholder="自定义邀请码（留空随机生成 16 位）"
             className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-500 transition"
           />
           <button
@@ -96,6 +109,25 @@ export default function AdminInviteCodesPage() {
             className="px-6 py-2.5 rounded-xl bg-brand-500 text-white font-medium hover:bg-brand-600 disabled:opacity-50 transition"
           >
             {generating ? '生成中...' : '生成'}
+          </button>
+        </div>
+        <div className="flex items-center gap-3 mt-3 pt-3 border-t border-gray-100">
+          <span className="text-sm text-gray-500">批量生成</span>
+          <input
+            type="number"
+            min={1}
+            max={50}
+            value={bulkCount}
+            onChange={e => setBulkCount(Math.max(1, Math.min(50, Number(e.target.value))))}
+            className="w-20 px-3 py-1.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-brand-500"
+          />
+          <span className="text-sm text-gray-500">个</span>
+          <button
+            onClick={bulkGenerate}
+            disabled={generating}
+            className="px-4 py-1.5 rounded-lg border border-brand-200 text-brand-600 text-sm font-medium hover:bg-brand-50 disabled:opacity-50 transition"
+          >
+            批量生成
           </button>
         </div>
       </div>
