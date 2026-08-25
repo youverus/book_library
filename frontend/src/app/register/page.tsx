@@ -54,7 +54,7 @@ export default function RegisterPage() {
         </div>
         <div>
           <label className="block text-sm text-gray-600 mb-1">邀请码</label>
-          <input value={inviteCode} onChange={e => setInviteCode(e.target.value.toUpperCase())}
+          <input value={inviteCode} onChange={e => setInviteCode(e.target.value)}
             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-500 transition"
             placeholder="请输入邀请码" required />
         </div>
