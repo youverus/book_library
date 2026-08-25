@@ -82,11 +82,31 @@ export const fileStorage = {
         if (content.length > 50) {
           chapters.push({
             index: index++,
-            title: chapter.title || chapter.id || `第${index}章`,
+            title: (typeof chapter.title === 'string' ? chapter.title : undefined) || chapter.id || `第${index}章`,
             content,
           });
         }
       } catch {
+      }
+    }
+    // 兜底：如果没有解析到有效章节，创建单个章节
+    if (chapters.length === 0) {
+      const allContent: string[] = [];
+      for (const chapter of epub.flow) {
+        if (!chapter.id) continue;
+        try {
+          const rawContent = await epub.getChapter(chapter.id);
+          const text = this.stripHtml(rawContent);
+          if (text.trim()) allContent.push(text.trim());
+        } catch {
+        }
+      }
+      if (allContent.length > 0) {
+        chapters.push({
+          index: 1,
+          title: epub.metadata?.title || '正文',
+          content: allContent.join('\n\n'),
+        });
       }
     }
     return {
