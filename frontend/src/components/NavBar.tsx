@@ -10,6 +10,12 @@ const links = [
   { href: '/me', label: '我的' },
 ];
 
+// 登录用户可见
+const userLinks = [
+  { href: '/store', label: '书城' },
+];
+
+// 仅管理员可见
 const adminLinks = [
   { href: '/admin/books', label: '书籍管理' },
   { href: '/admin/users', label: '用户管理' },
@@ -34,6 +40,17 @@ export function NavBar() {
                 active ? 'bg-brand-50 text-brand-700' : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
+              {l.label}
+            </Link>
+          );
+        })}
+        {user && userLinks.map(l => {
+          const active = pathname === l.href || pathname.startsWith(l.href);
+          return (
+            <Link key={l.href} href={l.href}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+                active ? 'bg-brand-50 text-brand-700' : 'text-gray-600 hover:bg-gray-50'
+              }`}>
               {l.label}
             </Link>
           );
