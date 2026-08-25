@@ -81,7 +81,7 @@ fileRoutes.post('/upload', requireAuth, requireAdmin, async c => {
 });
 
 fileRoutes.get('/books/:id/content', requireAuth, async c => {
-  const bookId = c.req.param('id');
+  const bookId = c.req.param('id')!;
   const book = await bookRepo.findById(bookId);
   if (!book) return httpError(c, 404, '书籍不存在');
   if (!book.filePath || !book.filePath.trim()) {
@@ -159,7 +159,7 @@ fileRoutes.get('/books/:id/content', requireAuth, async c => {
 });
 
 fileRoutes.get('/books/:id/download', requireAuth, async c => {
-  const bookId = c.req.param('id');
+  const bookId = c.req.param('id')!;
   const book = await bookRepo.findById(bookId);
   if (!book) return httpError(c, 404, '书籍不存在');
   if (!book.filePath || !book.filePath.trim()) {

@@ -32,19 +32,19 @@ bookshelfRoutes.put('/:id', requireAuth, async c => {
   const body = await c.req.json();
   const parsed = createSchema.safeParse(body);
   if (!parsed.success) throw new AppError(400, parsed.error.issues.map(i => i.message).join('; '));
-  const shelf = await bookshelfRepo.rename(c.req.param('id'), parsed.data.name);
+  const shelf = await bookshelfRepo.rename(c.req.param('id')!, parsed.data.name);
   return ok(c, shelf);
 });
 
 // 删除
 bookshelfRoutes.delete('/:id', requireAuth, async c => {
-  await bookshelfRepo.remove(c.req.param('id'));
+  await bookshelfRepo.remove(c.req.param('id')!);
   return ok(c, null, '删除成功');
 });
 
 // 列出书架中的书
 bookshelfRoutes.get('/:id/books', requireAuth, async c => {
-  const books = await bookshelfRepo.listBooks(c.req.param('id'));
+  const books = await bookshelfRepo.listBooks(c.req.param('id')!);
   return ok(c, books);
 });
 
@@ -53,12 +53,12 @@ bookshelfRoutes.post('/:id/books', requireAuth, async c => {
   const body = await c.req.json();
   const parsed = addBookSchema.safeParse(body);
   if (!parsed.success) throw new AppError(400, parsed.error.issues.map(i => i.message).join('; '));
-  const item = await bookshelfRepo.addBook(c.req.param('id'), parsed.data.bookId);
+  const item = await bookshelfRepo.addBook(c.req.param('id')!, parsed.data.bookId);
   return ok(c, item);
 });
 
 // 从书架移除书
 bookshelfRoutes.delete('/:id/books/:bookId', requireAuth, async c => {
-  await bookshelfRepo.removeBook(c.req.param('id'), c.req.param('bookId'));
+  await bookshelfRepo.removeBook(c.req.param('id')!, c.req.param('bookId')!);
   return ok(c, null, '移除成功');
 });

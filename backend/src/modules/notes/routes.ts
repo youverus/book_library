@@ -41,12 +41,12 @@ noteRoutes.put('/:id', requireAuth, async c => {
   const body = await c.req.json();
   const parsed = createSchema.partial().safeParse(body);
   if (!parsed.success) throw new AppError(400, parsed.error.issues.map(i => i.message).join('; '));
-  const note = await noteRepo.update(c.req.param('id'), parsed.data);
+  const note = await noteRepo.update(c.req.param('id')!, parsed.data);
   if (!note) return httpError(c, 404, '笔记不存在');
   return ok(c, note);
 });
 
 noteRoutes.delete('/:id', requireAuth, async c => {
-  await noteRepo.remove(c.req.param('id'));
+  await noteRepo.remove(c.req.param('id')!);
   return ok(c, null, '删除成功');
 });

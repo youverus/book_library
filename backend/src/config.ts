@@ -1,4 +1,3 @@
-import { config as loadEnv } from 'node:fs';
 // 简易 env 读取（避免引入 dotenv 依赖）
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';

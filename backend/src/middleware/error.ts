@@ -12,7 +12,7 @@ export function errorHandler() {
         return httpError(c, 400, err.issues.map(i => i.message).join('; '));
       }
       if (err instanceof AppError) {
-        return httpError(c, err.code, err.message, err.status);
+        return httpError(c, err.status, err.message);
       }
       console.error('[unhandled error]', err);
       return httpError(c, 500, '服务器内部错误');

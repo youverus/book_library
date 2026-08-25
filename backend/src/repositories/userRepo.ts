@@ -1,4 +1,3 @@
-import { eq } from 'drizzle-orm';
 import { eq, ne, desc } from 'drizzle-orm';
 import { getDB, schema } from '../db/index.js';
 import { newId } from '../utils/uuid.js';

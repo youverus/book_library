@@ -5,9 +5,9 @@ export function ok(c: Context, data: unknown, message = 'ok') {
 }
 
 export function fail(c: Context, code: number, message: string, httpStatus = 200) {
-  return c.json({ code, data: null, message }, httpStatus);
+  return c.json({ code, data: null, message }, httpStatus as never);
 }
 
 export function httpError(c: Context, status: number, message: string) {
-  return c.json({ code: status, data: null, message }, status);
+  return c.json({ code: status, data: null, message }, status as never);
 }

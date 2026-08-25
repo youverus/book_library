@@ -46,7 +46,7 @@ bookRoutes.get('/categories', async c => {
 
 // 公开：书籍详情
 bookRoutes.get('/:id', async c => {
-  const id = c.req.param('id');
+  const id = c.req.param('id')!;
   const book = await bookRepo.findById(id);
   if (!book) return httpError(c, 404, '书籍不存在');
   return ok(c, book);
@@ -63,7 +63,7 @@ bookRoutes.post('/', requireAuth, requireAdmin, async c => {
 
 // 管理员：更新
 bookRoutes.put('/:id', requireAuth, requireAdmin, async c => {
-  const id = c.req.param('id');
+  const id = c.req.param('id')!;
   const body = await c.req.json();
   const parsed = createSchema.partial().safeParse(body);
   if (!parsed.success) throw new AppError(400, parsed.error.issues.map(i => i.message).join('; '));
@@ -74,7 +74,7 @@ bookRoutes.put('/:id', requireAuth, requireAdmin, async c => {
 
 // 管理员：删除
 bookRoutes.delete('/:id', requireAuth, requireAdmin, async c => {
-  const id = c.req.param('id');
+  const id = c.req.param('id')!;
   const existing = await bookRepo.findById(id);
   if (!existing) return httpError(c, 404, '书籍不存在');
 
