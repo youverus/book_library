@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api, type Bookshelf, type Book } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth';
-import { BookCard } from '@/components/BookCard';
+import { BookshelfBookCard } from '@/components/BookshelfBookCard';
 
 export default function BookshelfPage() {
   const token = useAuthStore(s => s.token);
@@ -24,6 +24,10 @@ export default function BookshelfPage() {
     if (!activeShelf) return;
     api.get<Book[]>(`/bookshelves/${activeShelf}/books`).then(setBooks);
   }, [activeShelf]);
+
+  function handleRemoved(bookId: string) {
+    setBooks(books.filter(b => b.id !== bookId));
+  }
 
   if (!token) {
     return (
@@ -58,8 +62,15 @@ export default function BookshelfPage() {
           {books.length === 0 ? (
             <p className="text-gray-400">这个书架还没有书</p>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {books.map(b => <BookCard key={b.id} book={b} />)}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-6">
+              {books.map(b => (
+                <BookshelfBookCard
+                  key={b.id}
+                  book={b}
+                  shelfId={activeShelf!}
+                  onRemoved={() => handleRemoved(b.id)}
+                />
+              ))}
             </div>
           )}
         </>
