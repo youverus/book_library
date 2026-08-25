@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { api, type Book, type Bookshelf, type Progress } from '@/lib/api';
+import { api, type Book, type Bookshelf, type Progress, type ChapterItem } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth';
 
 export default function BookDetailPage() {
@@ -14,6 +14,7 @@ export default function BookDetailPage() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [progress, setProgress] = useState<Progress | null>(null);
+  const [chapters, setChapters] = useState<ChapterItem[]>([]);
   const [shelves, setShelves] = useState<Bookshelf[]>([]);
   const [showShelfPicker, setShowShelfPicker] = useState(false);
   const [adding, setAdding] = useState(false);
@@ -26,11 +27,15 @@ export default function BookDetailPage() {
     api.get<Book>(`/books/${id}`).then(setBook).catch(() => setBook(null)).finally(() => setLoading(false));
   }, [id]);
 
-  // 登录后加载书架和进度
+  // 登录后加载书架、进度和章节列表
   useEffect(() => {
     if (!user) return;
     api.get<Bookshelf[]>('/bookshelves').then(setShelves).catch(() => {});
     api.get<Progress | null>(`/progress/${id}`).then(setProgress).catch(() => {});
+    // 获取章节列表
+    api.get<{ chapters: ChapterItem[] }>(`/files/books/${id}/content`).then(data => {
+      setChapters(data.chapters || []);
+    }).catch(() => {});
   }, [id, user]);
 
   // 检查当前书籍是否在任一书架中
@@ -101,6 +106,7 @@ export default function BookDetailPage() {
   if (!book) return <div className="max-w-4xl mx-auto px-4 py-12 text-center text-gray-400">书籍不存在</div>;
 
   const hasProgress = progress && progress.chapter > 1;
+  const currentChapterIndex = progress?.chapter || 1;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 sm:py-10">
@@ -189,6 +195,49 @@ export default function BookDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* 章节列表 */}
+      {chapters.length > 0 && (
+        <div className="mt-10">
+          <h2 className="text-lg font-bold text-gray-800 mb-4">目录（{chapters.length} 章）</h2>
+          <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50 max-h-[600px] overflow-y-auto">
+            {chapters.map(ch => {
+              const isCurrent = ch.index === currentChapterIndex;
+              const isRead = hasProgress && ch.index < currentChapterIndex;
+              return (
+                <Link
+                  key={ch.index}
+                  href={`/books/${book.id}/read?chapter=${ch.index}`}
+                  className={`flex items-center justify-between px-6 py-4 transition hover:bg-gray-50 ${
+                    isCurrent ? 'bg-brand-50' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className={`text-sm font-mono w-8 text-right shrink-0 ${
+                      isCurrent ? 'text-brand-600 font-bold' : 'text-gray-400'
+                    }`}>
+                      {ch.index}
+                    </span>
+                    <span className={`truncate ${
+                      isCurrent ? 'text-brand-700 font-medium' : isRead ? 'text-gray-400' : 'text-gray-700'
+                    }`}>
+                      {ch.title}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {isCurrent && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-brand-500 text-white">当前</span>
+                    )}
+                    {isRead && (
+                      <span className="text-xs text-gray-400">已读</span>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
