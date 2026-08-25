@@ -11,6 +11,7 @@ const links = [
 ];
 
 const adminLinks = [
+  { href: '/admin/books', label: '书籍管理' },
   { href: '/admin/invite-codes', label: '邀请码' },
   { href: '/admin/upload', label: '上传书籍' },
   { href: '/admin/categories', label: '分类管理' },

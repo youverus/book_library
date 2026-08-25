@@ -38,6 +38,12 @@ bookRoutes.get('/', async c => {
   return ok(c, result);
 });
 
+// 公开：分类书籍数量统计（必须在 /:id 之前注册）
+bookRoutes.get('/categories', async c => {
+  const result = await bookRepo.listCategories();
+  return ok(c, result);
+});
+
 // 公开：书籍详情
 bookRoutes.get('/:id', async c => {
   const id = c.req.param('id');
@@ -72,17 +78,17 @@ bookRoutes.delete('/:id', requireAuth, requireAdmin, async c => {
   const existing = await bookRepo.findById(id);
   if (!existing) return httpError(c, 404, '书籍不存在');
 
-   // 删除关联的源文件
-   if (existing.filePath && existing.filePath.trim()) {
-     try {
-       const fullPath = existing.filePath.startsWith('/')
-         ? existing.filePath
-         : resolve(process.cwd(), 'storage', 'books', existing.filePath);
-       await fileStorage.delete(fullPath);
-     } catch {
-       // 文件删除失败不影响数据库记录删除
-     }
-   }
+  // 删除关联的源文件
+  if (existing.filePath && existing.filePath.trim()) {
+    try {
+      const fullPath = existing.filePath.startsWith('/')
+        ? existing.filePath
+        : resolve(process.cwd(), 'storage', 'books', existing.filePath);
+      await fileStorage.delete(fullPath);
+    } catch {
+      // 文件删除失败不影响数据库记录删除
+    }
+  }
 
   await bookRepo.remove(id);
   return ok(c, null, '删除成功');

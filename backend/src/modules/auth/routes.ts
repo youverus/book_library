@@ -26,7 +26,7 @@ authRoutes.post('/register', async c => {
   const body = await c.req.json();
   const parsed = registerSchema.safeParse(body);
   if (!parsed.success) throw new AppError(400, parsed.error.issues.map(i => i.message).join('; '));
-  const { username, email, password } = parsed.data;
+  const { username, email, password, inviteCode } = parsed.data;
 
   const conflict = await userRepo.exists(username, email);
   if (conflict === 'username') throw new AppError(409, '用户名已存在');

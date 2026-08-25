@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth';
@@ -13,11 +13,35 @@ export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
-  const [category, setCategory] = useState('其他');
+  const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [categories, setCategories] = useState<{ id: string; category: string }[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+
+  useEffect(() => {
+    api.get<{ id: string; category: string }[]>('/categories')
+      .then((data) => {
+        setCategories(data);
+        if (data.length > 0 && !category) {
+          setCategory(data[0].category);
+        }
+      })
+      .catch(() => {
+        /* fallback: keep empty */
+      })
+      .finally(() => setCategoriesLoading(false));
+  }, []);
+
+  if (categoriesLoading) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+        <p className="text-gray-500">加载中...</p>
+      </div>
+    );
+  }
 
   if (user?.role !== 'admin') {
     return (
@@ -46,6 +70,10 @@ export default function UploadPage() {
     }
     if (!title.trim()) {
       setError('请输入书名');
+      return;
+    }
+    if (!category) {
+      setError('请先添加至少一个分类');
       return;
     }
 
@@ -86,7 +114,7 @@ export default function UploadPage() {
       setFile(null);
       setTitle('');
       setAuthor('');
-      setCategory('其他');
+      setCategory(categories[0]?.category ?? '');
       setDescription('');
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -157,18 +185,20 @@ export default function UploadPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">分类</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            分类
+            {categories.length === 0 && (
+              <span className="text-red-500 text-xs ml-1">（暂无分类，请先在分类管理中添加）</span>
+            )}
+          </label>
           <select
             value={category}
             onChange={e => setCategory(e.target.value)}
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand-300 focus:ring-2 focus:ring-brand-100 outline-none transition bg-white"
           >
-            <option value="文学">文学</option>
-            <option value="科幻">科幻</option>
-            <option value="历史">历史</option>
-            <option value="古典">古典</option>
-            <option value="童话">童话</option>
-            <option value="其他">其他</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.category}>{c.category}</option>
+            ))}
           </select>
         </div>
 
@@ -192,7 +222,7 @@ export default function UploadPage() {
 
         <button
           onClick={handleUpload}
-          disabled={uploading}
+          disabled={uploading || categories.length === 0}
           className="w-full py-3 rounded-xl bg-brand-500 text-white font-medium hover:bg-brand-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {uploading ? '上传中...' : '上传书籍'}

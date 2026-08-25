@@ -5,7 +5,7 @@ import { api, type Category } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth';
 
 interface CatWithCount extends Category {
-  count?: number;
+  bookCount?: number;
 }
 
 export default function AdminCategoriesPage() {
@@ -22,9 +22,18 @@ export default function AdminCategoriesPage() {
 
   const loadCategories = useCallback(async () => {
     try {
-      const data = await api.get<CatWithCount[]>('/categories');
-      setCategories(data);
-    } catch { /* ignore */ }
+      const [cats, counts] = await Promise.all([
+        api.get<CatWithCount[]>('/categories'),
+        api.get<{ category: string; count: number }[]>('/books/categories'),
+      ]);
+      const countMap = new Map(counts.map(c => [c.category, c.count]));
+      setCategories(cats.map(c => ({ ...c, bookCount: countMap.get(c.category) ?? 0 })));
+    } catch {
+      try {
+        const data = await api.get<CatWithCount[]>('/categories');
+        setCategories(data.map(c => ({ ...c, bookCount: 0 })));
+      } catch { /* ignore */ }
+    }
     finally { setLoading(false); }
   }, []);
 
@@ -32,17 +41,29 @@ export default function AdminCategoriesPage() {
 
   async function addCategory() {
     const name = newCat.trim();
-    if (!name) return;
+    if (!name) {
+      alert('请输入分类名称');
+      return;
+    }
+    if (name.length > 20) {
+      alert('分类名称不能超过 20 个字符');
+      return;
+    }
     try {
       await api.post('/categories', { name });
       setNewCat('');
       await loadCategories();
     } catch (err) {
-      alert(err instanceof Error ? err.message : '添加失败');
+      const msg = err instanceof Error ? err.message : '添加失败';
+      alert(msg);
     }
   }
 
-  async function deleteCategory(name: string) {
+  async function deleteCategory(name: string, bookCount: number) {
+    if (bookCount > 0) {
+      alert(`该分类下还有 ${bookCount} 本书，无法删除。请先删除或移动这些书籍。`);
+      return;
+    }
     if (!confirm(`确定要删除分类「${name}」吗？`)) return;
     try {
       await api.del(`/categories/${encodeURIComponent(name)}`);
@@ -74,20 +95,35 @@ export default function AdminCategoriesPage() {
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100">
           <h2 className="text-lg font-semibold">全部分类（{categories.length}）</h2>
+          <p className="text-sm text-gray-400 mt-1">只有分类下没有书籍时才能删除</p>
         </div>
         {categories.length === 0 ? (
           <div className="px-6 py-12 text-center text-gray-400">暂无分类</div>
         ) : (
           <div className="divide-y divide-gray-50">
-            {categories.map(cat => (
-              <div key={cat.id} className="px-6 py-4 flex items-center justify-between">
-                <span className="font-medium text-gray-800">{cat.category}</span>
-                <button onClick={() => deleteCategory(cat.category)}
-                  className="px-3 py-1.5 text-sm rounded-lg text-red-600 border border-red-200 hover:bg-red-50 transition">
-                  删除
-                </button>
-              </div>
-            ))}
+            {categories.map(cat => {
+              const canDelete = (cat.bookCount ?? 0) === 0;
+              return (
+                <div key={cat.id} className="px-6 py-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="font-medium text-gray-800">{cat.category}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
+                      {cat.bookCount ?? 0} 本书
+                    </span>
+                  </div>
+                  <button onClick={() => deleteCategory(cat.category, cat.bookCount ?? 0)}
+                    disabled={!canDelete}
+                    title={canDelete ? '删除分类' : '该分类下还有书籍，无法删除'}
+                    className={`px-3 py-1.5 text-sm rounded-lg border transition ${
+                      canDelete
+                        ? 'text-red-600 border-red-200 hover:bg-red-50'
+                        : 'text-gray-300 border-gray-100 cursor-not-allowed'
+                    }`}>
+                    删除
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
