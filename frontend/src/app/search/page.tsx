@@ -34,7 +34,7 @@ export default function SearchPage() {
           {results.length === 0 ? (
             <p className="text-gray-400 text-center py-12">没有找到相关书籍</p>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-6">
               {results.map(b => <BookCard key={b.id} book={b} />)}
             </div>
           )}

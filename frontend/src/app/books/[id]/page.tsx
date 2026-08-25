@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { api, type Book, type Bookshelf } from '@/lib/api';
+import { api, type Book, type Bookshelf, type Progress } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth';
 
 export default function BookDetailPage() {
@@ -13,15 +13,39 @@ export default function BookDetailPage() {
   const [book, setBook] = useState<Book | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const [progress, setProgress] = useState<Progress | null>(null);
   const [shelves, setShelves] = useState<Bookshelf[]>([]);
   const [showShelfPicker, setShowShelfPicker] = useState(false);
   const [adding, setAdding] = useState(false);
   const [addedMsg, setAddedMsg] = useState('');
 
+  // 检查书籍是否在书架中
+  const [isInShelf, setIsInShelf] = useState(false);
+
   useEffect(() => {
     api.get<Book>(`/books/${id}`).then(setBook).catch(() => setBook(null)).finally(() => setLoading(false));
-    if (user) api.get<Bookshelf[]>('/bookshelves').then(setShelves).catch(() => {});
+  }, [id]);
+
+  // 登录后加载书架和进度
+  useEffect(() => {
+    if (!user) return;
+    api.get<Bookshelf[]>('/bookshelves').then(setShelves).catch(() => {});
+    api.get<Progress | null>(`/progress/${id}`).then(setProgress).catch(() => {});
   }, [id, user]);
+
+  // 检查当前书籍是否在任一书架中
+  useEffect(() => {
+    if (!user || shelves.length === 0) {
+      setIsInShelf(false);
+      return;
+    }
+    Promise.all(shelves.map(s => api.get<Book[]>(`/bookshelves/${s.id}/books`)))
+      .then(results => {
+        const inAny = results.some(books => books.some(b => b.id === id));
+        setIsInShelf(inAny);
+      })
+      .catch(() => setIsInShelf(false));
+  }, [id, user, shelves]);
 
   async function handleDelete() {
     if (!confirm(`确定要删除《${book?.title}》吗？此操作不可恢复。`)) return;
@@ -39,6 +63,7 @@ export default function BookDetailPage() {
     try {
       await api.post(`/bookshelves/${shelfId}/books`, { bookId: id });
       setShowShelfPicker(false);
+      setIsInShelf(true);
       setAddedMsg('已加入书架');
       setTimeout(() => setAddedMsg(''), 2000);
     } catch (err) {
@@ -54,6 +79,7 @@ export default function BookDetailPage() {
       const shelf = await api.post<Bookshelf>('/bookshelves', { name: '默认书架' });
       await api.post(`/bookshelves/${shelf.id}/books`, { bookId: id });
       setShelves([...shelves, shelf]);
+      setIsInShelf(true);
       setAddedMsg('已加入默认书架');
       setTimeout(() => setAddedMsg(''), 2000);
     } catch (err) {
@@ -73,6 +99,8 @@ export default function BookDetailPage() {
 
   if (loading) return <div className="max-w-4xl mx-auto px-4 py-12 text-center text-gray-400">加载中...</div>;
   if (!book) return <div className="max-w-4xl mx-auto px-4 py-12 text-center text-gray-400">书籍不存在</div>;
+
+  const hasProgress = progress && progress.chapter > 1;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 sm:py-10">
@@ -117,15 +145,40 @@ export default function BookDetailPage() {
           </div>
           <p className="mt-4 text-gray-600 leading-relaxed">{book.description}</p>
 
-          <div className="mt-6 flex gap-3 items-center">
-            <Link href={`/books/${book.id}/read`}
-              className="px-6 py-3 rounded-xl bg-brand-500 text-white font-medium hover:bg-brand-600 transition">
+          {/* 阅读进度提示 */}
+          {hasProgress && (
+            <div className="mt-4 px-4 py-3 rounded-xl bg-brand-50 text-brand-700 text-sm">
+              已读到第 {progress!.chapter} 章，进度 {progress!.percentage}
+            </div>
+          )}
+
+          <div className="mt-6 flex flex-wrap gap-3 items-center">
+            {/* 继续阅读：有进度时显示，跳到上次位置 */}
+            {hasProgress && (
+              <Link
+                href={`/books/${book.id}/read?chapter=${progress!.chapter}`}
+                className="px-6 py-3 rounded-xl bg-brand-500 text-white font-medium hover:bg-brand-600 transition"
+              >
+                继续阅读
+              </Link>
+            )}
+            {/* 开始阅读：始终显示，从头开始 */}
+            <Link
+              href={`/books/${book.id}/read?restart=1`}
+              className="px-6 py-3 rounded-xl border border-brand-200 text-brand-600 font-medium hover:bg-brand-50 transition"
+            >
               开始阅读
             </Link>
-            <button onClick={handleAddToShelf} disabled={adding}
-              className="px-6 py-3 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition disabled:opacity-50">
-              {adding ? '添加中...' : '+ 加入书架'}
-            </button>
+            {/* 加入书架：未加入书架时显示 */}
+            {!isInShelf && (
+              <button
+                onClick={handleAddToShelf}
+                disabled={adding}
+                className="px-6 py-3 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition disabled:opacity-50"
+              >
+                {adding ? '添加中...' : '+ 加入书架'}
+              </button>
+            )}
             {addedMsg && <span className="text-sm text-green-600">{addedMsg}</span>}
             {user?.role === 'admin' && (
               <button onClick={handleDelete} disabled={deleting}

@@ -41,7 +41,7 @@ export default function BookshelfPage() {
       {loading ? (
         <p className="text-gray-400">加载中...</p>
       ) : shelves.length === 0 ? (
-        <p className="text-gray-400">还没有书架，去首页添加书籍吧</p>
+        <p className="text-gray-400">还没有书架，去书城添加书籍吧</p>
       ) : (
         <>
           <div className="flex gap-2 overflow-x-auto no-scrollbar mb-6">

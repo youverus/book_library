@@ -41,4 +41,8 @@ export const progressRepo = {
   async updatedSince(userId: string, since: string) {
     return this.db.select().from(schema.readingProgress).where(and(eq(schema.readingProgress.userId, userId), sql`${schema.readingProgress.updatedAt} > ${since}`));
   },
+
+  async delete(userId: string, bookId: string) {
+    await this.db.delete(schema.readingProgress).where(and(eq(schema.readingProgress.userId, userId), eq(schema.readingProgress.bookId, bookId)));
+  },
 };

@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, type ChapterContent, type ChapterItem, type Progress } from '@/lib/api';
 
 export default function ReadPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const bookId = params.id as string;
 
@@ -22,11 +23,33 @@ export default function ReadPage() {
   const [saving, setSaving] = useState(false);
 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const progressLoadedRef = useRef(false);
+
+  // URL 参数
+  const targetChapter = searchParams.get('chapter') ? parseInt(searchParams.get('chapter')!, 10) : null;
+  const isRestart = searchParams.get('restart') === '1';
 
   useEffect(() => {
     loadChapters();
-    loadProgress();
   }, [bookId]);
+
+  // 章节加载完成后，决定从哪里开始
+  useEffect(() => {
+    if (chapters.length === 0 || progressLoadedRef.current) return;
+    progressLoadedRef.current = true;
+
+    if (isRestart) {
+      // 重新开始：清除进度，从第一章开始
+      clearProgress();
+      setCurrentChapter(chapters[0]?.index ?? 1);
+    } else if (targetChapter) {
+      // URL 指定了章节（继续阅读）
+      setCurrentChapter(targetChapter);
+    } else {
+      // 没有指定章节，加载用户进度
+      loadProgress();
+    }
+  }, [chapters, targetChapter, isRestart, bookId]);
 
   useEffect(() => {
     if (currentChapter > 0) {
@@ -38,7 +61,7 @@ export default function ReadPage() {
     if (currentChapter > 0 && totalChapters > 0) {
       saveProgress(currentChapter);
     }
-  }, [currentChapter]);
+  }, [currentChapter, totalChapters]);
 
   async function loadChapters() {
     try {
@@ -63,6 +86,17 @@ export default function ReadPage() {
         setCurrentChapter(chapters[0].index);
       }
     } catch {
+      if (chapters.length > 0) {
+        setCurrentChapter(chapters[0].index);
+      }
+    }
+  }
+
+  async function clearProgress() {
+    try {
+      await api.del(`/progress/${bookId}`);
+    } catch {
+      // 忽略删除失败
     }
   }
 

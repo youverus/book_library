@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { api, type Book } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth';
 import { BookCard } from '@/components/BookCard';
@@ -95,7 +94,7 @@ export default function StorePage() {
       ) : (
         <>
           <p className="text-sm text-gray-500 mb-4">共 {total} 本</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-6">
             {books.map(b => <BookCard key={b.id} book={b} />)}
           </div>
         </>
